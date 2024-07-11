@@ -3,13 +3,13 @@
 #INCLUDE "RESTFUL.ch"
 
 /*/{Protheus.doc} Pedido
-WebService para manipulação de residuos de pedidos no Protheus
+WebService para manipula��o de residuos de pedidos no Protheus
 @type Function Webservice
 @version  12.1.2310
 @author leonardo.JAVBCODE
 @since 21/06/2024
 /*/
-WSRESTFUL Pedido DESCRIPTION "Serviço para Limpeza de resíduos" FORMAT APPLICATION_JSON
+WSRESTFUL Pedido DESCRIPTION "Servi�o para Limpeza de residuos" FORMAT APPLICATION_JSON
 
     WSDATA pedido as string Optional
 
@@ -22,7 +22,7 @@ WSRESTFUL Pedido DESCRIPTION "Serviço para Limpeza de resíduos" FORMAT APPLICA
 
 End WSRESTFUL
 
-/*/{Protheus.doc} PUT - Orçamento
+/*/{Protheus.doc} PUT - Pedido
 Metodo PUT para eliminar os residudos de um pedido
 @type Function Webservice
 @version  12.1.2310
@@ -49,7 +49,7 @@ WSMETHOD PUT WSSERVICE PEDIDO
             SetRestFault( 400, 'Parser Json com erro' )
         EndIf
     Else
-        SetRestFault(400, EncodeUTF8("Pedido Sogivendas não informado"))
+        SetRestFault(400, EncodeUTF8("Pedido Sogivendas n�o informado"))
     EndIf
 
     FreeObj(oJson)
