@@ -1,0 +1,10 @@
+Eliminar residuos não tem execauto
+Filial 010101
+
+❖ Todos os pedidos originados do Sogivendas, deverão ser incluídos no ERP Protheus como
+LIBERADOS. Caso esteja dentro da Regra de Negócio definida na rotina (FATA100).
+
+❖ Recomendado um armazém específico para o Sogivendas, caso o representante efetue alguma 
+venda, poderá mudar o armazém manualmente no Sogivendas. 
+
+❖ Todas as alterações realizadas no pedido de venda, deverão ser enviadas para o Sogivendas    - Precisamos da API

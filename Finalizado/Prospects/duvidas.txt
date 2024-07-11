@@ -1,0 +1,2 @@
+validar campos da integração
+validar estrutura
