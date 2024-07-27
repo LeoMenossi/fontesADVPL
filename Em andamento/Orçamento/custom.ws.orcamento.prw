@@ -1,4 +1,4 @@
-#INCLUDE "PROTHEUS.ch"
+#INCLUDE "PROTHEUS.CH"
 #INCLUDE "FWMVCDEF.ch"
 #INCLUDE "RESTFUL.ch"
 
@@ -53,8 +53,7 @@ WSMETHOD POST WSSERVICE ORCAMENTO
             ::SetResponse(EncodeUTF8(oJsonRet:ToJson()))
         EndIf
     Else
-        ConErr(cErro)
-        SetRestFault(400)
+        SetRestFault( 400, "Parser Json com erro")
     EndIf
 
     FreeObj(oJson)
@@ -69,7 +68,7 @@ Metodo PUT para atualizar os dados de um orçamento
 @author leonardo.JAVBCODE
 @since 21/06/2024
 /*/
-WSMETHOD PUT WSSERVICE CLIENTE
+WSMETHOD PUT WSSERVICE ORCAMENTO
     Local cErro    as char
     Local cCodigoOrcamento     as char
     Local oJson    as object
@@ -88,8 +87,7 @@ WSMETHOD PUT WSSERVICE CLIENTE
                 ::SetResponse(EncodeUTF8(oJsonRet:ToJson()))
             EndIf
         Else
-            ConErr(cErro)
-            SetRestFault(400)
+            SetRestFault( 400, "Parser Json com erro")
         EndIf
     Else
         SetRestFault(400, EncodeUTF8("Codigo do orçamento não informado"))

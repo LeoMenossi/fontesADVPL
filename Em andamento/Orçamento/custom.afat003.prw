@@ -4,11 +4,12 @@
 #DEFINE ALTERA 4
 
 User Function afat003(oJson, oJsonRet, nOperation)
-    Local aDadosCabec := {}
-	Local aDadosItens := {}
+    Local aCab := {}
+	Local aItem := {}
 	Local aErros      := {}
 	Local aAreaSCJ    := SCJ->(FwGetArea())
 	Local aAreaSCK    := SCK->(FwGetArea())
+	Local aAreaSC5    := SC5->(FwGetArea())
 	Local cPasta      := GetNewPar("MV_PASTA", "\cfglog\")
     Local cArquivo    := "log_inclui_orcamento" + DTOS(dDataBase) + ".txt"
 	Local cLog        := ""
@@ -22,14 +23,14 @@ User Function afat003(oJson, oJsonRet, nOperation)
 
 	Begin Transaction
 
-	afat003B(oJson, @aDadosCabec, @aDadosItens, , nOperation)
+	afat003B(oJson, @aCab, @aItem, , nOperation)
 
 	DbSelectArea("SCJ")
-	SCJ->(DbSelectOrder(1))
+	SCJ->(DbSetOrder(1))
 
-	If SCJ->(!DbSeek(xFilial("SCJ") + aDadosCabec[2][1] + PadR(oJson["cliente"], FwSX3Util():GetFieldStruct("CJ_CLIENTE")[3]) + PadR(oJson["loja"], FwSX3Util():GetFieldStruct("CJ_LOJA")[3])))
+	If SCJ->(!DbSeek(xFilial("SCJ") + aCab[1][1][1] + PadR(oJson["cliente"], FwSX3Util():GetFieldStruct("CJ_CLIENTE")[3]) + PadR(oJson["loja"], FwSX3Util():GetFieldStruct("CJ_LOJA")[3])))
 
-		MATA415(aDadosCabec, aDadosItens, nOperation) 
+		MsExecAuto({|x,y,z|MATA415(x,y,z)},aCab, aItem, 3) 
 
 		If lMsErroAuto
 			aErros := GetAutoGRLog()
@@ -49,7 +50,7 @@ User Function afat003(oJson, oJsonRet, nOperation)
 
 				afat003D(@aDadosCabec, @aDadosItens, lCliente)
 
-				MATA416(aDadosCabec, aDadosItens)
+				MsExecAuto({|x,y|MATA416(x,y)},aDadosCabec, aDadosItens)
 
 				If lMsErroAuto
 					aErros := GetAutoGRLog()
@@ -68,7 +69,7 @@ User Function afat003(oJson, oJsonRet, nOperation)
 
 				afat003D(@aDadosCabec, @aDadosItens)
 
-				MATA416(aDadosCabec, aDadosItens)
+				MsExecAuto({|x,y|MATA416(x,y)},aDadosCabec, aDadosItens)
 
 				If lMsErroAuto
 					aErros := GetAutoGRLog()
@@ -100,6 +101,7 @@ User Function afat003(oJson, oJsonRet, nOperation)
 
     FwRestArea(aAreaSCJ)
     FwRestArea(aAreaSCK)
+    FwRestArea(aAreaSC5)
 Return lRet
 
 User Function afat003A(oJson, oJsonRet, cCodOrc, nOperation)
@@ -123,11 +125,11 @@ User Function afat003A(oJson, oJsonRet, cCodOrc, nOperation)
 	afat003B(oJson, @aDadosCabec, @aDadosItens, cCodOrc, nOperation)
 
 	DbSelectArea("SCJ")
-	SCJ->(DbSelectOrder(1))
+	SCJ->(DbSetOrder(1))
 
 	If SCJ->(DbSeek(xFilial("SCJ") + cCodOrc + PadR(oJson["cliente"], FwSX3Util():GetFieldStruct("CJ_CLIENTE")[3]) + PadR(oJson["loja"], FwSX3Util():GetFieldStruct("CJ_LOJA")[3])))
 
-		MATA415(aDadosCabec, aDadosItens, nOperation) 
+		MsExecAuto({|x,y,z|MATA415(x,y,z)},aDadosCabec, aDadosItens, nOperation) 
 
 		If lMsErroAuto
 			aErros := GetAutoGRLog()
@@ -157,49 +159,55 @@ User Function afat003A(oJson, oJsonRet, cCodOrc, nOperation)
     FwRestArea(aAreaSCK)
 Return lRet
 
-Static Function afat003B(oJson, aDadosCabec, aDadosItens, cCodOrc, nOperation)
+Static Function afat003B(oJson, aCab, aItem, cCodOrc, nOperation)
 
-	Default cCodOrc := ""
+	Local cNomeVendedor := ""
+	Local aItens        := {}
+	Local aHeader       := {}
 
-	aAdd(aDadosCabec,{"CJ_FILIAL", xFilial("SCJ"), Nil})
-	aAdd(aDadosCabec,{IIF(Empty(cCodOrc),GetSXENum("SCJ","CJ_NUM"), cCodOrc),"CJ_NUM", Nil})
-	aAdd(aDadosCabec,{"CJ_TIPOCLI", oJson["tipo"], Nil})
-	aAdd(aDadosCabec,{"CJ_CLIENTE", oJson["cliente"], Nil})
-	aAdd(aDadosCabec,{"CJ_LOJA"   , oJson["loja"], Nil})
-	aAdd(aDadosCabec,{"CJ_CLIENT" , oJson["clienteEntrega"], Nil})
-	aAdd(aDadosCabec,{"CJ_LOJAENT", oJson["lojaEntrega"], Nil})
-	aAdd(aDadosCabec,{"CJ_PROSPE" , oJson["prospect"], Nil})
-	aAdd(aDadosCabec,{"CJ_LOJPRO" , oJson["lojaProspect"], Nil})
-	aAdd(aDadosCabec,{"CJ_CONDPAG", oJson["condicaoPagamento"], Nil})
-	aAdd(aDadosCabec,{"CJ_XTRANSP", oJson["transportadora"], Nil})
-	aAdd(aDadosCabec,{"CJ_XTRARD" , oJson["transportadoraRedespacho"], Nil})
-	aAdd(aDadosCabec,{"CJ_EMISSAO", STOD(oJson["emissao"]), Nil})
-	aAdd(aDadosCabec,{"CJ_TPFRETE", oJson["tipoFrete"], Nil})
-	aAdd(aDadosCabec,{"CJ_FRETE"  , Val(oJson["frete"]), Nil})
-	aAdd(aDadosCabec,{"CJ_SEGURO" , Val(oJson["seguro"]), Nil})
-	aAdd(aDadosCabec,{"CJ_DESPESA", Val(oJson["despesa"]), Nil})
-	aAdd(aDadosCabec,{"CJ_XMENNOT", oJson["mensagemNota"], Nil})
-	aAdd(aDadosCabec,{"CJ_TABELA" , oJson["tabela"], Nil})
-	aAdd(aDadosCabec,{"CJ_XVEND1" , oJson["vendedor"], Nil})
-	aAdd(aDadosCabec,{"CJ_XVENNO" , oJson["nomeVendedor"], Nil})
-	aAdd(aDadosCabec,{"CJ_XPEDCOM", "", Nil})
-	aAdd(aDadosCabec,{"CJ_XPEDSOG", oJson["pedidoSogivendas"], Nil})
-	aAdd(aDadosCabec,{"CJ_XPEDVEN", "", Nil})
-	aAdd(aDadosCabec,{"CJ_TPCARGA", oJson["tipoCarga"], Nil})
-	aAdd(aDadosCabec,{"CJ_XPERDA" , oJson["motivoPerda"], Nil})
-	aAdd(aDadosCabec,{"CJ_XPERDES", oJson["descricaoPerda"], Nil})
+	Default cCodOrc     := ""
 
-	aAdd(aDadosItens,{"CK_FILIAL",xFilial("SC5"), NIL})
-	aAdd(aDadosItens,{"CK_ITEM"   ,oJson["item"], NIL})
-	aAdd(aDadosItens,{"CK_PRODUTO",oJson["produto"], NIL})
-	aAdd(aDadosItens,{"CK_QTDVEN" ,Val(oJson["quantidade"]), NIL})
-	aAdd(aDadosItens,{"CK_PRCVEN" ,Val(oJson["precoUnitario"]), NIL})
-	aAdd(aDadosItens,{"CK_VALOR"  ,Val(oJson["valorTotal"]), NIL})
-	aAdd(aDadosItens,{"CK_OPER"   ,"01", NIL})
-	aAdd(aDadosItens,{"CK_DESCONT",Val(oJson["desconto"]), NIL})
-	aAdd(aDadosItens,{"CK_ENTREG" ,STOD(oJson["dataEntrega"]), NIL})
-	aAdd(aDadosItens,{"CK_PEDCLI" ,oJson["pedidoCompra"], NIL})
-	aAdd(aDadosItens,{"CK_OBS"    ,oJson["obeservacao"], NIL})
+	aAdd(aHeader,{IIF(Empty(cCodOrc),GetSXENum("SCJ","CJ_NUM"), cCodOrc),"CJ_NUM", Nil})
+	aAdd(aHeader,{"CJ_CLIENTE", oJson["cliente"], Nil})
+	aAdd(aHeader,{"CJ_LOJA"   , oJson["loja"], Nil})
+	aAdd(aHeader,{"CJ_LOJAENT", oJson["lojaEntrega"], Nil})
+	aAdd(aHeader,{"CJ_CONDPAG", oJson["condicaoPagamento"], Nil})
+	aAdd(aHeader,{"CJ_TXMOEDA", Val(oJson["taxaMoeda"]), Nil})
+	aAdd(aHeader,{"CJ_TIPOCLI", oJson["tipo"], Nil})
+	aAdd(aCab, aHeader)
+		//{"CJ_PROSPE" , oJson["prospect"], Nil},;
+		//{"CJ_LOJPRO" , oJson["lojaProspect"], Nil},;
+		//{"CJ_XTRANSP", oJson["transportadora"], Nil},;
+		//{"CJ_XTRARD" , oJson["transportadoraRedespacho"], Nil},;
+		//{"CJ_EMISSAO", STOD(oJson["emissao"]), Nil},;
+		//{"CJ_TPFRETE", oJson["tipoFrete"], Nil},;
+		//{"CJ_FRETE"  , Val(oJson["frete"]), Nil},;
+		//{"CJ_SEGURO" , Val(oJson["seguro"]), Nil},;
+		//{"CJ_DESPESA", Val(oJson["despesa"]), Nil},;
+		//{"CJ_XMENNOT", oJson["mensagemNota"], Nil},;
+		//{"CJ_TABELA" , oJson["tabela"], Nil},;
+		//{"CJ_XVEND1" , oJson["vendedor"], Nil},;
+		//{"CJ_XVENNO" , cNomeVendedor := afat003E(oJson["vendedor"]), Nil},;
+		//{"CJ_XPEDCOM", "", Nil},;
+		//{"CJ_XPEDSOG", oJson["pedidoSogivendas"], Nil},;
+		//{"CJ_XPEDVEN", "", Nil},;
+		//{"CJ_TPCARGA", oJson["tipoCarga"], Nil},;
+		//{"CJ_XPERDA" , oJson["motivoPerda"], Nil},;
+		//{"CJ_XPERDES", oJson["descricaoPerda"], Nil}})
+
+	aAdd(aItens,{"CK_ITEM"   ,oJson["item"], NIL})
+	aAdd(aItens,{"CK_PRODUTO",oJson["produto"], NIL})
+	aAdd(aItens,{"CK_UM"     ,"KT", NIL})
+	aAdd(aItens,{"CK_QTDVEN" ,Val(oJson["quantidade"]), NIL})
+	aAdd(aItens,{"CK_PRCVEN" ,Val(oJson["precoUnitario"]), NIL})
+	aAdd(aItens,{"CK_PRUNIT" ,Val(oJson["precoUnitario"]), NIL})
+	aAdd(aItens,{"CK_VALOR"  ,Val(oJson["valorTotal"]), NIL})
+	aAdd(aItens,{"CK_TES"  , oJson["tes"], NIL})
+	aAdd(aItem, aItens)
+		//{"CK_DESCONT",Val(oJson["desconto"]), NIL},;
+		//{"CK_ENTREG" ,STOD(oJson["dataEntrega"]), NIL},;
+		//{"CK_PEDCLI" ,oJson["pedidoCompra"], NIL},;
+		//{"CK_OBS"    ,oJson["obeservacao"], NIL}})
 
 Return
 
@@ -266,4 +274,18 @@ Static Function afat003D(aDadosCabec, aDadosItens, lCliente)
 	aDadosItens := aItensAprov
 
 Return
+
+Static Function afat003E(cCodVend)
+	Local cNomeVendedor := ""
+	Local aAreaSA3      := SA3->(FwGetArea())
+
+	DbSelectArea("SA3")
+	SA3->(DbSetOrder(1))
+
+	If SA3->(DbSeek(xFilial("SA3") + cCodVend))
+		cNomeVendedor := SA3->A3_NOME
+	EndIf
+
+	FwRestArea(aAreaSA3)
+Return cNomeVendedor
 

@@ -1,4 +1,5 @@
 #INCLUDE "PROTHEUS.CH"
+#include "Fileio.ch"
 
 #DEFINE INCLUI 3
 #DEFINE ALTERA 4
@@ -24,7 +25,7 @@ User Function afat005(oJson, oJsonRet, nOperation)
 	afat005B(oJson, @aDadosCabec, , nOperation)
 
 	DbSelectArea("SE4")
-	SE4->(DbSelectOrder(1))
+	SE4->(DbSetOrder(1))
 
 	If SE4->(!DbSeek(xFilial("SE4") + AllTrim(oJson["codigo"])))
 
@@ -79,7 +80,7 @@ User Function afat005A(oJson, oJsonRet, cCodigo, nOperation)
 	afat005B(oJson, @aDadosCabec, cCodigo, nOperation)
 
 	DbSelectArea("SE4")
-	SE4->(DbSelectOrder(1))
+	SE4->(DbSetOrder(1))
 
 	If SE4->(DbSeek(xFilial("SE4") + AllTrim(oJson["codigo"])))
 
@@ -121,8 +122,8 @@ Static Function afat005B(oJson, aDadosExec, cCodigo, nOperation)
     aAdd(aDadosExec, {"E4_TIPO"   ,oJson["tipo"]                               , Nil})
     aAdd(aDadosExec, {"E4_COND"   ,oJson["condicao"]                           , Nil})
     aAdd(aDadosExec, {"E4_DESCRI" ,oJson["descricao"]                          , Nil})
-    aAdd(aDadosExec, {"E4_XCUSFIN",oJson["custoFinanceiro"]                    , Nil})
-    If nOperarion == ALTERA
+    //aAdd(aDadosExec, {"E4_XCUSFIN",oJson["custoFinanceiro"]                    , Nil})
+    If nOperation == ALTERA
         aAdd(aDadosExec, {"E4_MSBLQL",oJson["status"]                          , Nil})
     Else
         aAdd(aDadosExec, {"E4_MSBLQL", "2"                                     , Nil})
@@ -134,7 +135,6 @@ Static Function afat005C(cLog, cPasta, cArquivo)
 
     Local cPath   := ""
     Local nHandle := 0
-    Local nLinhas := 0
 
     cPath := cPasta + cArquivo
 
