@@ -2,20 +2,18 @@
 
 
 User Function afat007(oService)
-    Local lRet      As Logical
-    Local oAdapter  As Object
-   
+	Local lRet     := .T.      
+    Local oAdapter := NIL  
+
     DEFAULT oService:Page      := 1 
     DEFAULT oService:PageSize  := 100
     DEFAULT oService:Fields    := ""
-   
-    lRet        := .T.
-    
+
     /*
-    TransportadoraAdapter será nossa classe que fornece os dados para o serviço
+    GetTransportadora será nossa classe que fornece os dados para o serviço
     O primeiro parametro define que iremos usar o GET
     */
-    oAdapter := TransportadoraAdapter():New('GET')
+    oAdapter := GetTransportadora():New('GET')
 
     /*
     O método setPage indica qual página deveremos retornar
@@ -48,18 +46,19 @@ User Function afat007(oService)
     /*
     Se tudo ocorreu bem, retorna os dados via Json
     */
-    IF oAdapter:lOk
-       oService:SetResponse(oAdapter:GetJsonResponse())
-    ELSE
+    If oAdapter:lOk
+		oService:SetResponse(oAdapter:GetJsonResponse())
+    Else
         /*
         Ou retorna o erro encontrado durante o processamento
         */
         SetRestFault(oAdapter:GetCode(),oAdapter:GetMessage())
         lRet := .F.
-   EndIF
-   /*
-   faz a desalocação de objetos e arrays utilizados
+	EndIf
+	/*
+	faz a desalocação de objetos e arrays utilizados
    */
-   oAdapter:DeActivate()
-   oAdapter := NIL   
+	oAdapter:DeActivate()
+	FreeObj(oAdapter) 
+
 Return lRet

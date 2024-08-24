@@ -8,10 +8,10 @@ WSRESTFUL Transportadora DESCRIPTION 'Serviço para consulta de cadastro de tranp
     WSDATA fields     AS character   Optional 
 
     WSMETHOD GET Transportadora; 
-        DESCRIPTION 'Consulta de transportadora'; 
-        WSSYNTAX '/api/faturamento/transportes/v2/transportadora'; 
-        PATH '/api/faturamento/transportes/v2/transportadora'; 
-        TTALK 'v1';
+        DESCRIPTION "Consulta de transportadora"; 
+        WSSYNTAX "/api/faturamento/transportes/v2/transportadora"; 
+        PATH "/api/faturamento/transportes/v2/transportadora"; 
+        TTALK "v1";
         PRODUCES APPLICATION_JSON
 End WSRESTFUL
 
